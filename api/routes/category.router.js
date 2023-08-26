@@ -7,34 +7,26 @@ const validatorHandler = require('../middlewares/validatorHandler');
 const router = express.Router();
 const service = new CategoryService();
 
-/*
-router.get('/categories/:categoryId/products/:productId',(req,res)=>{
-  const {categoryId, productId} = req.params;
-  res.json({
-    categoryId,
-    productId
-  });
-});*/
 
-router.get('/',(req,res)=>{
-  const categories = service.find();
+router.get('/',async(req,res)=>{
+  const categories = await service.find();
   res.json(categories);
 });
 
 router.get('/:id',
   validatorHandler(getCategorySchema,'params'),
-  (req,res)=>{
+  async(req,res)=>{
   const {id} = req.params;
-  const category = service.findOne(id);
+  const category = await service.findOne(id);
   res.json(category);
   }
 );
 
 router.post('/',
   ValidatorHandler(creatCategorySchema,'body'),
-  (req,res)=>{
+  async(req,res)=>{
   const body = req.body;
-  const newCategory = service.create(body);
+  const newCategory = await service.create(body);
   res.status(201).json(newCategory);
   }
 );
@@ -42,17 +34,17 @@ router.post('/',
 router.patch('/:id',
   validatorHandler(getCategorySchema,'params'),
   ValidatorHandler(updateCategorySchema,'body'),
-  (req,res)=>{
+  async(req,res)=>{
   const {id} = req.params;
   const body = req.body;
-  const category = service.update(id,body);
+  const category = await service.update(id,body);
   res.json(category);
   }
 );
 
-router.delete('/:id',(req,res)=>{
+router.delete('/:id',async (req,res)=>{
   const {id} = req.params;
-  const rta = service.delete(id);
+  const rta = await service.delete(id);
   res.json(rta);
 });
 

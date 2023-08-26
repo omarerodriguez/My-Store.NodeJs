@@ -1,37 +1,39 @@
-const express = require('express');
-const routerApi = require('./routes/index');
-const cors = require('cors');
+  const express = require('express');
+  const routerApi = require('./routes/index');
+  const cors = require('cors');
 
-const {logErrors,errorHandler,boomErrorHandler} = require('./middlewares/error.handler');
+  const {logErrors,errorHandler,boomErrorHandler, handlerSQLError} = require('./middlewares/error.handler');
 
-const app = express();
-const port = process.env.port || 3000;
+  const app = express();
+  const port = process.env.port || 3000;
 
-app.use(express.json());
+  app.use(express.json());
 
-const whileList= ['http://localhost:8080'];
-const options ={
-  origin:(origin,callback)=>{
-    if(whileList.includes(origin) || !origin){
-      callback(null,true);
-    }else{
-      callback(new Error('No Permitido'));
+  const whileList= ['http://localhost:8080'];
+  const options ={
+    origin:(origin,callback)=>{
+      if(whileList.includes(origin) || !origin){
+        callback(null,true);
+      }else{
+        callback(new Error('No Permitido'));
+      }
     }
   }
-}
-app.use(cors(options));
+  app.use(cors(options));
 
-app.get('/api',(req,res)=>{
-  res.send('Home');
-});
+  app.get('/api',(req,res)=>{
+    res.send('Home');
+  });
 
-routerApi(app);
+  routerApi(app);
 
-app.use(logErrors);
-app.use(boomErrorHandler);
-app.use(errorHandler);
+  app.use(logErrors);
+  app.use(handlerSQLError);
+  app.use(boomErrorHandler);
+  app.use(errorHandler);
 
 
-app.listen(port,()=>{
-  console.log(`Mi port ${port}`);
-});
+
+  app.listen(port,()=>{
+    console.log(`Mi port ${port}`);
+  });

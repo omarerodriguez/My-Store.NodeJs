@@ -1,73 +1,35 @@
-const {faker} = require('@faker-js/faker');
+const {models} = require('./../libs/sequelize');
 const boom = require('@hapi/boom');
 
 class ProductService {
- constructor(){
-  this.products =[];
-  this.generate();
+ constructor(){}
+
+ async find(){
+  return await models.Product.findAll();
  }
 
- generate(){
-    const limit = 100;
-    for(let index=0;index<limit;index++){
-      this.products.push({
-        id: faker.string.uuid(),
-        name: faker.commerce.productName(),
-        price:parseInt(faker.commerce.price(),10),
-        image: faker.image.url(),
-        isBlock:faker.datatype.boolean()
-      });
-  }
-}
-
+async findOne(id){
+  const product = await models.Product.findByPk(id,{
+    include:['category']
+  });
+  if(!product){throw boom.notFound(`Product Id:${id} not found`);}
+  return product;
+ }
  async create(data){
-    const newProduct={
-      id:faker.string.uuid(),
-      ...data
-    }
-    this.products.push(newProduct);
-    return newProduct;
-  }
-
-  find(){
-    return new Promise((res,rej)=>{
-      setTimeout(()=>{
-        res(this.products);
-      },1000);
-    })
-  }
-
- async findOne(id){
-    const product = this.products.find(item=> item.id===id);
-    if(!product){
-      throw boom.notFound(' product not found');
-    }
-    if(product.isBlock){
-      throw boom.conflict('Product is block');
-    }
-    return product;
+  const newProduct = await models.Product.create(data);
+  return newProduct;
   }
 
  async update(id,changes){
-    const index =  this.products.findIndex(item=> item.id===id);
-    if(index ===-1){
-      throw boom.notFound(' product not found');
-    }
-    const product = this.products[index];
-    this.products[index] = {
-      ...product,
-      ...changes
-    };
-    return this.products[index];
+  const product = await this.findOne(id);
+  const res = await product.update(changes);
+  return res;
   }
 
  async delete(id){
-    const index =  this.products.findIndex(item=> item.id===id);
-    if(index ===-1){
-      throw boom.notFound('Product not found');
-    }
-    this.products.splice(index,1);
-    return {id};
+  const product = this.findOne(id);
+  await product.destroy();
+  return {res:`Deleted product with Id:${id}`};
   }
 }
 
