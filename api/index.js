@@ -1,6 +1,7 @@
   const express = require('express');
   const routerApi = require('./routes/index');
   const cors = require('cors');
+  const {checkApiKey} = require('./middlewares/auth.handler');
 
   const {logErrors,errorHandler,boomErrorHandler, handlerSQLError} = require('./middlewares/error.handler');
 
@@ -21,7 +22,13 @@
   }
   app.use(cors(options));
 
-  app.get('/api',(req,res)=>{
+  require('./utils/auth');
+
+  app.get('/',(req,res)=>{
+    res.send('Home');
+  });
+
+  app.get('/nueva-ruta',checkApiKey,(req,res)=>{
     res.send('Home');
   });
 
@@ -35,5 +42,5 @@
 
 
   app.listen(port,()=>{
-    console.log(`Mi port ${port}`);
+    console.log(`Listen port:${port}`);
   });

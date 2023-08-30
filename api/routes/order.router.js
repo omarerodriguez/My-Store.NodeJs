@@ -1,4 +1,6 @@
   const express = require('express');
+const passport = require('passport');
+
   const validatorHandler = require('../middlewares/validatorHandler');
   const OrderService = require('./../services/order.service');
   const {createOrderSchema,getOrderSchema,addItemSchema} = require('./../schemas/order.schema');
@@ -25,13 +27,18 @@
 );
 
   router.post('/',
+  passport.authenticate('jwt',{session:false}),
   validatorHandler(createOrderSchema,'body'),
-    async(req,res)=>{
-    const body = req.body;
-    const newOrder =await service.create(body);
-    res.status(201).json(newOrder);
+    async(req,res,next)=>{
+    try {
+      const body = {userId:req.user.sub}
+      const newOrder =await service.create(body);
+      res.status(201).json(newOrder);
+    } catch (error) {
+      next(error);
     }
-  );
+  }
+);
 
   router.post('/add-item',
   validatorHandler(addItemSchema,'body'),
